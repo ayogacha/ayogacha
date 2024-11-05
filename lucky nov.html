@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Undian Lima Kotak</title>
+    <style>
+        /* Style untuk seluruh halaman */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 380px;
+            max-width: 90%;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #555;
+        }
+
+        /* Style untuk kotak undian */
+        .box {
+            display: inline-block;
+            width: 70px;
+            height: 70px;
+            margin: 10px;
+            background-color: #3498db;
+            color: white;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .box:hover {
+            transform: translateY(-5px);
+            background-color: #2980b9;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Style untuk kotak saat dinonaktifkan */
+        .disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Box hadiah */
+        .reward-box {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.7);
+            background-color: #fff;
+            color: #2ecc71;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            animation: showReward 0.5s ease forwards;
+            z-index: 10;
+        }
+
+        .reward-box h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .reward-box p {
+            font-size: 1.25rem;
+        }
+
+        /* Animasi untuk box hadiah */
+        @keyframes showReward {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Kembang api */
+        .firework {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #ffdd00;
+            border-radius: 50%;
+            animation: explode 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .firework::before, .firework::after {
+            content: '';
+            position: absolute;
+            width: inherit;
+            height: inherit;
+            background-color: inherit;
+            border-radius: inherit;
+            animation: explode 0.8s ease-out forwards;
+        }
+
+        .firework::before {
+            transform: rotate(45deg);
+        }
+
+        .firework::after {
+            transform: rotate(-45deg);
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(5);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>yuk pilih yang mana yang akan jadi keberuntungan mu!!!</h2>
+    <div class="box" id="box1" onclick="checkResult(1)">Kotak 1</div>
+    <div class="box" id="box2" onclick="checkResult(2)">Kotak 2</div>
+    <div class="box" id="box3" onclick="checkResult(3)">Kotak 3</div>
+    <div class="box" id="box4" onclick="checkResult(4)">Kotak 4</div>
+    <div class="box" id="box5" onclick="checkResult(5)">Kotak 5</div>
+</div>
+
+<div id="rewardBox" class="reward-box">
+    <h3>Selamat!</h3>
+    <p>Anda mendapatkan hadiah pulsa free dari gerai ini!</p>
+</div>
+
+<script>
+    const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000; // Satu minggu dalam milidetik
+
+    function checkResult(boxNumber) {
+        const lastPickTime = localStorage.getItem('lastPickTime');
+        const currentTime = new Date().getTime();
+
+       // Jika sudah ada waktu pemilihan sebelumnya dan kurang dari 1 minggu, tampilkan pesan
+if (lastPickTime && currentTime - lastPickTime < ONE_WEEK_MS) {
+    alert("Ups masa gacha sudah selesai, mari coba lagi di lain waktu");
+    disableBoxes();
+    return;
+}
+        // Set hasil acak untuk kotak
+        const results = ["Kurang Beruntung", "Kurang Beruntung", "Kurang Beruntung", "Beruntung!", "Beruntung!"];
+        const shuffledResults = results.sort(() => 0.5 - Math.random());
+        const message = shuffledResults[boxNumber - 1];
+        
+        // Simpan waktu pemilihan ke localStorage
+        localStorage.setItem('lastPickTime', currentTime);
+
+        // Nonaktifkan semua kotak setelah memilih
+        disableBoxes();
+
+        // Jika hasilnya "Beruntung!", tampilkan box hadiah dan kembang api
+        if (message === "Beruntung!") {
+            showRewardBox();
+            showFireworks();
+        } else {
+            alert("Hasil: Kurang Beruntung");
+        }
+    }
+
+    function disableBoxes() {
+        // Menonaktifkan klik untuk semua kotak dan menambahkan kelas disabled
+        for (let i = 1; i <= 5; i++) {
+            const box = document.getElementById(`box${i}`);
+            box.classList.add("disabled");
+            box.onclick = null;
+        }
+    }
+
+    function showRewardBox() {
+        const rewardBox = document.getElementById("rewardBox");
+        rewardBox.style.display = "block";
+    }
+
+    function showFireworks() {
+        const container = document.querySelector("body");
+        for (let i = 0; i < 10; i++) {
+            const firework = document.createElement("div");
+            firework.classList.add("firework");
+            firework.style.left = Math.random() * 100 + "vw";
+            firework.style.top = Math.random() * 100 + "vh";
+            container.appendChild(firework);
+            setTimeout(() => firework.remove(), 800); // Hapus kembang api setelah animasi selesai
+        }
+    }
+
+    // Memeriksa apakah pengguna sudah memilih dalam waktu 1 minggu terakhir saat halaman dimuat
+window.onload = function() {
+    const lastPickTime = localStorage.getItem('lastPickTime');
+    const currentTime = new Date().getTime();
+
+    if (lastPickTime && currentTime - lastPickTime < ONE_WEEK_MS) {
+        alert("Ups masa gacha sudah selesai, mari coba lagi di lain waktu");
+        disableBoxes();
+    }
+};
+</script>
+
+</body>
+</html>
